@@ -1,0 +1,24 @@
+<template>
+  <header class="pt-5 mb-8 flex items-center justify-between">
+    <div class="flex items-center gap-5">
+      <svg class="icon" width="65" height="65">
+        <use xlink:href="@/assets/icons/sprite.svg#weather-logo"></use>
+      </svg>
+      <h4 class="text-blue uppercase leading-30 text-2xl font-bold">vue weather</h4>
+    </div>
+    <div class="flex items-center gap-5">
+      <svg class="icon cursor-pointer flex-shrink-0" width="35" height="35">
+        <use xlink:href="@/assets/icons/sprite.svg#theme-logo"></use>
+      </svg>
+      <input class="bg-blue-100 py-3 px-5 w-full rounded-xl text-black placeholder-black" type="text" placeholder="Выбрать город">
+    </div>
+  </header>
+
+</template>
+<script setup>
+
+</script>
+
+<style scoped>
+
+</style>
