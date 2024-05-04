@@ -26,9 +26,11 @@ module.exports = {
         17: '17.07px',
         20: '21.94px',
         30: '30.48px',
+        40: '48.76px'
       },
       boxShadow: {
-        xs: '2px 5px 25px -3px #B4B4B440'
+        xs: '2px 5px 25px -3px #B4B4B440',
+        md: '1px 4px 10px -1px #4793FF33'
       }
     },
   },
