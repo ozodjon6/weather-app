@@ -1,10 +1,10 @@
 <template>
-  <div class="container px-4" :class="{'dark': isModeDark }">
+  <div class="container px-4" :class="{ dark: isModeDark }">
     <Header
       @themeToggled="handleThemeToggled"
       @searchWeather="handleSearchWeather"
     />
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-12">
+    <div v-if="!isNotFound" class="grid grid-cols-1 xl:grid-cols-3 gap-12">
       <div class="shadow-xs dark:bg-black w-full bg-white rounded-[20px] p-5">
         <div class="flex items-center gap-8 mb-8 justify-between">
           <div class="flex flex-col">
@@ -21,8 +21,14 @@
           </div>
           <CPreloader :loading="loading" width="119px" height="119px" />
           <img
-            v-if="!loading && weatherInfo && weatherInfo?.weather && weatherInfo?.weather[0] && weatherInfo?.weather[0]?.description"
-            class="w-full h-[119px]"
+            v-if="
+              !loading &&
+              weatherInfo &&
+              weatherInfo?.weather &&
+              weatherInfo?.weather[0] &&
+              weatherInfo?.weather[0]?.description
+            "
+            class="w-full max-w-[119px] h-full max-h-[119px]"
             :src="weatherImagePath"
             :alt="weatherInfo?.weather[0]?.description"
           />
@@ -37,7 +43,9 @@
           />
           <template v-if="!loading">
             <span class="text-gray text-2xl">Время: {{ currentTime }}</span>
-            <span class="text-gray text-2xl">Город: {{ city }}</span>
+            <span class="text-gray text-2xl"
+              >Город: {{ weatherInfo?.name }}</span
+            >
           </template>
         </div>
       </div>
@@ -138,6 +146,12 @@
         </ul>
       </div>
     </div>
+    <div
+      v-else
+      class="shadow-xs flex items-center justify-center dark:bg-black w-full bg-white rounded-[20px] p-5"
+    >
+      Не найден такое город
+    </div>
     <div class="mt-12">
       <div class="flex items-center justify-between">
         <button
@@ -148,27 +162,29 @@
         <button
           class="shadow-xs px-5 bg-white py-2 text-black rounded-[5px] font-normal text-md leading-20"
         >
-          На неделю
+          Отменить
         </button>
       </div>
       <div
         class="shadow-xs dark:bg-black dark:text-white grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-5 mt-2 rounded-b-[20px] bg-white p-5"
       >
-        <div class="bg-blue-100 p-3 rounded-[10px]">
-          <span>Сегодня</span>
-          <p>28 авг</p>
-          <img src="@/assets/icons/small-rain-sun.svg" alt="" />
-          <span>+18°</span>
-          <p>+15°</p>
-          <div>Облачно</div>
-        </div>
-        <div class="bg-blue-100 p-3 rounded-[10px]">
-          <span>Сегодня</span>
-          <p>28 авг</p>
-          <img src="@/assets/icons/small-rain-sun.svg" alt="" />
-          <span>+18°</span>
-          <p>+15°</p>
-          <div>Облачно</div>
+        <div
+          v-for="(item, index) in weatherInfoList?.list"
+          :key="index"
+          class="bg-blue-100 p-3 rounded-[10px]"
+        >
+          <span>{{getShortWeekdayFromDate(item?.dt_txt)}}</span>
+          <p>{{ formattedDate(item?.dt_txt) }}</p>
+          <img
+            class="my-3 w-12 h-12"
+            :src="weatherImagePathList(item?.weather[0].icon)"
+            alt=""
+          />
+          <span class="text-[22px] text-black dark:text-white"
+            >{{ Math.round(item?.main?.temp) }}°</span
+          >
+          <p class="text-gray">{{ Math.round(item?.main?.feels_like) }}°</p>
+          <div>{{ item?.weather[0].main }}</div>
         </div>
       </div>
     </div>
@@ -177,7 +193,7 @@
 
 <script>
 import axios from "@/service/axios";
-import {apiKey} from "@/service/const";
+import { apiKey, forecast, weather } from "@/service/const";
 
 export default {
   name: "IndexPage",
@@ -185,16 +201,20 @@ export default {
     return {
       city: "Tashkent",
       weatherInfo: null,
+      weatherInfoList: null,
       currentTime: "",
       loading: false,
       isModeDark: false,
+      isNotFound: false,
     };
   },
 
   computed: {
     weatherImagePath() {
-      const description = this.weatherInfo?.weather[0]?.description;
-      return `/_nuxt/assets/image/weather-main/${this.addHyphenBetweenSpaces(description)}.png`;
+      const description = this.weatherInfo?.weather[0]?.icon;
+      return `https://openweathermap.org/img/w/${this.addHyphenBetweenSpaces(
+        description
+      )}.png`;
     },
   },
 
@@ -202,16 +222,39 @@ export default {
     async getWeatherInfo() {
       this.loading = true;
       await axios
-        .get(`?q=${this.city}&units=metric&appid=${apiKey}`)
+        .get(`${weather}?q=${this.city}&units=metric&appid=${apiKey}`)
         .then((res) => {
           this.weatherInfo = res.data;
           this.loading = false;
+        })
+        .catch((e) => {
+          console.log("e", e.response.data.cod);
+          this.isNotFound = e.response.data.cod === "404";
+        });
+    },
+    async getWeatherList() {
+      this.loading = true;
+      await axios
+        .get(`${forecast}?q=${this.city}&units=metric&appid=${apiKey}`)
+        .then((res) => {
+          this.weatherInfoList = res.data;
+          this.loading = false;
+        })
+        .catch((e) => {
+          console.log("e", e.response.data.cod);
+          this.isNotFound = e.response.data.cod === "404";
         });
     },
     handleSearchWeather(cityName) {
       this.city = cityName;
       this.getWeatherInfo(cityName);
-      console.log('city', cityName)
+      this.getWeatherList(cityName);
+      console.log("city", cityName);
+    },
+    weatherImagePathList(item) {
+      return `https://openweathermap.org/img/w/${this.addHyphenBetweenSpaces(
+        item
+      )}.png`;
     },
     getCurrentTime() {
       const now = new Date();
@@ -230,9 +273,40 @@ export default {
     handleThemeToggled(value) {
       this.isModeDark = value;
     },
+    formattedDate(date) {
+      const months = {
+        "01": "янв",
+        "02": "фев",
+        "03": "мар",
+        "04": "апр",
+        "05": "май",
+        "06": "июн",
+        "07": "июл",
+        "08": "авг",
+        "09": "сен",
+        10: "окт",
+        11: "ноя",
+        12: "дек",
+      };
+
+      const parts = date.split(" ")[0].split("-");
+      const day = parseInt(parts[2], 10);
+      const month = months[parts[1]];
+      const time = date.split(" ")[1].slice(0, -3);
+
+      return `${day} ${month} ${time}`;
+    },
+    getShortWeekdayFromDate(dateString) {
+      const date = new Date(dateString);
+      const options = { weekday: 'short' }; // Опции форматирования для получения короткого названия дня недели
+      const shortWeekday = date.toLocaleString('ru-RU', options); // 'ru-RU' - код языка и страны для русского языка
+
+      return  shortWeekday.charAt(0).toUpperCase() + shortWeekday.slice(1);
+    },
   },
   mounted() {
     this.getWeatherInfo();
+    this.getWeatherList();
     this.getCurrentTime();
     setInterval(this.getCurrentTime, 1000);
   },
