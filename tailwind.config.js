@@ -30,10 +30,11 @@ module.exports = {
       },
       boxShadow: {
         xs: '2px 5px 25px -3px #B4B4B440',
-        md: '1px 4px 10px -1px #4793FF33'
+        md: '1px 4px 10px -1px #4793FF33',
       }
     },
   },
   plugins: [],
+  darkMode: 'class'
 }
 

@@ -7,6 +7,9 @@
 body {
   font-family: "Montserrat", sans-serif;
 }
+body.dark {
+  @apply bg-black
+}
 
 .container {
   @apply max-w-[1200px] mx-auto
