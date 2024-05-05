@@ -194,7 +194,7 @@
 <script>
 import axios from "@/service/axios";
 import { apiKey, forecast, weather } from "@/service/const";
-
+import { formatDateTime, getShortWeekdayFromDate, months } from "@/utils/helpers";
 export default {
   name: "IndexPage",
   data() {
@@ -206,6 +206,7 @@ export default {
       loading: false,
       isModeDark: false,
       isNotFound: false,
+      getShortWeekdayFromDate
     };
   },
 
@@ -258,9 +259,7 @@ export default {
     },
     getCurrentTime() {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      this.currentTime = `${hours}:${minutes}`;
+      this.currentTime = formatDateTime(now, "HH:mm");
     },
     addHyphenBetweenSpaces(text) {
       if (!text || text.trim() === "") {
@@ -274,20 +273,7 @@ export default {
       this.isModeDark = value;
     },
     formattedDate(date) {
-      const months = {
-        "01": "янв",
-        "02": "фев",
-        "03": "мар",
-        "04": "апр",
-        "05": "май",
-        "06": "июн",
-        "07": "июл",
-        "08": "авг",
-        "09": "сен",
-        10: "окт",
-        11: "ноя",
-        12: "дек",
-      };
+
 
       const parts = date.split(" ")[0].split("-");
       const day = parseInt(parts[2], 10);
@@ -295,13 +281,6 @@ export default {
       const time = date.split(" ")[1].slice(0, -3);
 
       return `${day} ${month} ${time}`;
-    },
-    getShortWeekdayFromDate(dateString) {
-      const date = new Date(dateString);
-      const options = { weekday: 'short' }; // Опции форматирования для получения короткого названия дня недели
-      const shortWeekday = date.toLocaleString('ru-RU', options); // 'ru-RU' - код языка и страны для русского языка
-
-      return  shortWeekday.charAt(0).toUpperCase() + shortWeekday.slice(1);
     },
   },
   mounted() {
