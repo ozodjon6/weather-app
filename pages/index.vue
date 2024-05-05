@@ -1,6 +1,9 @@
 <template>
-  <div class="container px-4" :class="{ dark: isDark }">
-    <Header @themeToggled="handleThemeToggled" />
+  <div class="container px-4" :class="{'dark': isModeDark }">
+    <Header
+      @themeToggled="handleThemeToggled"
+      @searchWeather="handleSearchWeather"
+    />
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-12">
       <div class="shadow-xs dark:bg-black w-full bg-white rounded-[20px] p-5">
         <div class="flex items-center gap-8 mb-8 justify-between">
@@ -18,12 +21,10 @@
           </div>
           <CPreloader :loading="loading" width="119px" height="119px" />
           <img
-            v-if="!loading"
-            class="w-ful h-[119px]"
-            :src="`/_nuxt/assets/image/weather-main/${addHyphenBetweenSpaces(
-              weatherInfo?.weather[0]?.description
-            )}.png`"
-            alt=""
+            v-if="!loading && weatherInfo && weatherInfo?.weather && weatherInfo?.weather[0] && weatherInfo?.weather[0]?.description"
+            class="w-full h-[119px]"
+            :src="weatherImagePath"
+            :alt="weatherInfo?.weather[0]?.description"
           />
         </div>
         <div class="flex flex-col gap-3">
@@ -43,13 +44,13 @@
       <div
         class="shadow-xs dark:bg-black bg-[url('@/assets/image/cloud-image.png')] bg-no-repeat bg-right-top bg-white rounded-[20px] p-5 xl:col-span-2"
       >
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-7">
           <CPreloader
             v-for="i in 4"
             :key="i"
             :loading="loading"
             width="100%"
-            height="32px"
+            height="38px"
           />
         </div>
         <ul v-if="!loading" class="flex flex-col gap-7">
@@ -176,7 +177,8 @@
 
 <script>
 import axios from "@/service/axios";
-// const apiKey = import.meta.env.VUE_APP_API_KEY
+import {apiKey} from "@/service/const";
+
 export default {
   name: "IndexPage",
   data() {
@@ -185,17 +187,14 @@ export default {
       weatherInfo: null,
       currentTime: "",
       loading: false,
-      isDark: false,
-      apiKey: '9b713948a01879d0619d32c9e1d8c87f'
+      isModeDark: false,
     };
   },
 
   computed: {
     weatherImagePath() {
       const description = this.weatherInfo?.weather[0]?.description;
-      return `@/assets/image/weather-main/${this.addHyphenBetweenSpaces(
-        description
-      )}.png`;
+      return `/_nuxt/assets/image/weather-main/${this.addHyphenBetweenSpaces(description)}.png`;
     },
   },
 
@@ -203,13 +202,17 @@ export default {
     async getWeatherInfo() {
       this.loading = true;
       await axios
-        .get(`?q=${this.city}&units=metric&appid=${this.apiKey}`)
+        .get(`?q=${this.city}&units=metric&appid=${apiKey}`)
         .then((res) => {
           this.weatherInfo = res.data;
           this.loading = false;
         });
     },
-
+    handleSearchWeather(cityName) {
+      this.city = cityName;
+      this.getWeatherInfo(cityName);
+      console.log('city', cityName)
+    },
     getCurrentTime() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, "0");
@@ -225,8 +228,8 @@ export default {
       return words.join("-");
     },
     handleThemeToggled(value) {
-      this.isDark = value
-    }
+      this.isModeDark = value;
+    },
   },
   mounted() {
     this.getWeatherInfo();
