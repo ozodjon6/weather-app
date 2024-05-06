@@ -194,7 +194,7 @@
 <script>
 import axios from "@/service/axios";
 import { apiKey, forecast, weather } from "@/service/const";
-import { formatDateTime, getShortWeekdayFromDate, months } from "@/utils/helpers";
+import { formatDateTime, getShortWeekdayFromDate, addHyphenBetweenSpaces, months } from "@/utils/helpers";
 export default {
   name: "IndexPage",
   data() {
@@ -213,7 +213,7 @@ export default {
   computed: {
     weatherImagePath() {
       const description = this.weatherInfo?.weather[0]?.icon;
-      return `https://openweathermap.org/img/w/${this.addHyphenBetweenSpaces(
+      return `https://openweathermap.org/img/w/${addHyphenBetweenSpaces(
         description
       )}.png`;
     },
@@ -253,7 +253,7 @@ export default {
       console.log("city", cityName);
     },
     weatherImagePathList(item) {
-      return `https://openweathermap.org/img/w/${this.addHyphenBetweenSpaces(
+      return `https://openweathermap.org/img/w/${addHyphenBetweenSpaces(
         item
       )}.png`;
     },
@@ -261,14 +261,7 @@ export default {
       const now = new Date();
       this.currentTime = formatDateTime(now, "HH:mm");
     },
-    addHyphenBetweenSpaces(text) {
-      if (!text || text.trim() === "") {
-        return "";
-      }
 
-      const words = text.split(" ");
-      return words.join("-");
-    },
     handleThemeToggled(value) {
       this.isModeDark = value;
     },

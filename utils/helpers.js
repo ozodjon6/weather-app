@@ -31,3 +31,12 @@ export const months = {
   "11": "ноя",
   "12": "дек",
 };
+
+export function addHyphenBetweenSpaces(text) {
+  if (!text || text.trim() === "") {
+    return "";
+  }
+
+  const words = text.split(" ");
+  return words.join("-");
+}
