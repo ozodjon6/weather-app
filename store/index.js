@@ -1,40 +1,54 @@
-// // store/index.js
-// import { createStore } from 'vuex';
-// import axios from '@/service/axios';
-//
-//
-// export default createStore({
-//   state: {
-//     isDarkTheme: false,
-//     weatherInfo: null,
-//   },
-//   mutations: {
-//     toggleTheme(state) {
-//       state.isDarkTheme = !state.isDarkTheme;
-//     },
-//     setWeatherInfo(state, weatherInfo) {
-//       state.weatherInfo = weatherInfo;
-//     },
-//   },
-//   actions: {
-//     async fetchWeatherInfo({ commit }, city) {
-//       try {
-//         const response = await axios.get(`?q=${city}&units=metric&appid=${process.env.VUE_APP_API_KEY}`);
-//         commit('setWeatherInfo', response.data);
-//       } catch (error) {
-//         console.error('Error fetching weather data:', error);
-//       }
-//     },
-//     toggleTheme({ commit }) {
-//       commit('toggleTheme');
-//     },
-//   },
-//   getters: {
-//     isDarkTheme(state) {
-//       return state.isDarkTheme;
-//     },
-//     weatherInfo(state) {
-//       return state.weatherInfo;
-//     },
-//   },
-// });
+import axios from "@/service/axios";
+import { apiKey, forecast, weather } from "@/service/const";
+
+
+export const state = () => ({
+  weatherInfo: null,
+  weatherInfoList: null,
+  loading: false,
+  isNotFound: false
+})
+
+export const mutations = () => ({
+  SET_WEATHER_INFO(state, data) {
+    state.weatherInfo = data;
+  },
+  SET_WEATHER_INFO_LIST(state, data) {
+    state.weatherInfoList = data;
+  },
+  SET_LOADING(state, value) {
+    state.loading = value;
+  },
+  SET_NOT_FOUND(state, value) {
+    state.isNotFound = value;
+  }
+})
+
+export const actions = () => ({
+  async fetchWeatherInfo({ commit }, city) {
+    commit('SET_LOADING', true);
+    try {
+      const response = await axios.get(`${weather}?q=${city}&units=metric&appid=${apiKey}`);
+      commit('SET_WEATHER_INFO', response.data);
+      commit('SET_LOADING', false);
+      commit('SET_NOT_FOUND', false);
+    } catch (error) {
+      console.error(error);
+      commit('SET_NOT_FOUND', error.response.data.cod === "404");
+      commit('SET_LOADING', false);
+    }
+  },
+  async fetchWeatherList({ commit }, city) {
+    commit('SET_LOADING', true);
+    try {
+      const response = await axios.get(`${forecast}?q=${city}&units=metric&appid=${apiKey}`);
+      commit('SET_WEATHER_INFO_LIST', response.data);
+      commit('SET_LOADING', false);
+      commit('SET_NOT_FOUND', false);
+    } catch (error) {
+      console.error(error);
+      commit('SET_NOT_FOUND', error.response.data.cod === "404");
+      commit('SET_LOADING', false);
+    }
+  }
+})

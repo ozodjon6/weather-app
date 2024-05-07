@@ -168,24 +168,33 @@
       <div
         class="shadow-xs dark:bg-black dark:text-white grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-5 mt-2 rounded-b-[20px] bg-white p-5"
       >
-        <div
-          v-for="(item, index) in weatherInfoList?.list"
-          :key="index"
-          class="bg-blue-100 p-3 rounded-[10px]"
-        >
-          <span>{{getShortWeekdayFromDate(item?.dt_txt)}}</span>
-          <p>{{ formattedDate(item?.dt_txt) }}</p>
-          <img
-            class="my-3 w-12 h-12"
-            :src="weatherImagePathList(item?.weather[0].icon)"
-            alt=""
-          />
-          <span class="text-[22px] text-black dark:text-white"
-            >{{ Math.round(item?.main?.temp) }}°</span
+        <template v-if="!loading">
+          <div
+            v-for="(item, index) in weatherInfoList?.list"
+            :key="index"
+            class="bg-blue-100 p-3 rounded-[10px]"
           >
-          <p class="text-gray">{{ Math.round(item?.main?.feels_like) }}°</p>
-          <div>{{ item?.weather[0].main }}</div>
-        </div>
+            <span>{{getShortWeekdayFromDate(item?.dt_txt)}}</span>
+            <p>{{ formattedDate(item?.dt_txt) }}</p>
+            <img
+              class="my-3 w-12 h-12"
+              :src="weatherImagePathList(item?.weather[0].icon)"
+              alt=""
+            />
+            <span class="text-[22px] text-black dark:text-white"
+            >{{ Math.round(item?.main?.temp) }}°</span
+            >
+            <p class="text-gray">{{ Math.round(item?.main?.feels_like) }}°</p>
+            <div>{{ item?.weather[0].main }}</div>
+          </div>
+        </template>
+        <CPreloader
+          v-for="i in 16"
+          :key="i"
+          :loading="loading"
+          width="100%"
+          height="225px"
+        />
       </div>
     </div>
   </div>
@@ -266,8 +275,6 @@ export default {
       this.isModeDark = value;
     },
     formattedDate(date) {
-
-
       const parts = date.split(" ")[0].split("-");
       const day = parseInt(parts[2], 10);
       const month = months[parts[1]];
